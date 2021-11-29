@@ -1908,6 +1908,8 @@ a.brand:focus{
 .vertical-title span{
   display: block;
   float: right;
+  font-size :20px;
+  
 }
 
 .section .intro{
