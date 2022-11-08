@@ -1,13 +1,22 @@
+.containers {
+  display: flex;
+  width: 100%;
+  padding-top: 60px;
+  padding-left: 50px;
+  box-sizing: border-box;
+  height: 0vh;
+}
 .container {
   display: flex;
   width: 100%;
+  padding-top:-20px ;
   padding: 10% 2%;
   box-sizing: border-box;
-  height: 100vh;
+  height: 110vh;
 }
 
 .header {
-  padding: 60px;
+  padding: 10px;
   text-align: center;
   background: #1abc9c;
   color: white;
