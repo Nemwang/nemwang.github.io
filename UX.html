@@ -15,6 +15,7 @@
 
 <title>Portfolio-Jhalanath Nemwang</title> 
 
+
 <!-- Styles -->
 <link href="css/style.css" rel="stylesheet" media="screen">
 <link href="css/style2.css" rel="stylesheet" media="screen">
@@ -148,8 +149,7 @@
     <script src="js/owl.carousel.min.js"></script>
     <script src="js/jquery.pagepiling.js"></script>
     <script src="js/scripts.js"></script> 
-</body>
-</html>
+
 
       
       <!-- Add padding to the gallery container -->
@@ -194,36 +194,44 @@
           }
         </style>
         <div class="textheader" style="padding: 20px;"> <h1>UX/UI Designs</h1></div>
-        <div class="gallery">
-          <div class="gallery-item">
-            <img src="images/gallery/calc.jpg" alt="Image 1">
-            <div class="image-name">Calculator</div>
-          </div>
-          <div class="gallery-item">
-            <img src="images/gallery/gym.jpg" alt="Image 2">
-            <div class="image-name">Gym</div>
-          </div>
-          <div class="gallery-item">
-            <img src="images/gallery/cycle.jpg" alt="Image 3">
-            <div class="image-name">Cycle</div>
-          </div>
-          <div class="gallery-item">
-            <img src="images/gallery/user.jpg" alt="Image 4">
-            <div class="image-name">User Profile</div>
-          </div>
+        <div class="gallery"></div>
 
-          <div class="gallery-item">
-            <img src="images/gallery/icon.jpg" alt="Image 4">
-            <div class="image-name">Icon</div>
-          </div>
-          <div class="gallery-item">
-            <img src="images/gallery/checkout.jpg" alt="Image 4">
-            <div class="image-name">Checkout</div>
-          </div>
-          <div class="gallery-item">
-            <img src="images/gallery/error.jpg" alt="Image 4">
-            <div class="image-name">Error</div>
-          </div>
+  <script>
+    const directory = "images/gallery/"; // Update with the correct directory path
+
+    // Function to fetch the image files from the directory
+    function fetchImages() {
+      fetch(directory)
+        .then(response => response.text())
+        .then(data => {
+          const parser = new DOMParser();
+          const htmlDocument = parser.parseFromString(data, 'text/html');
+          const images = Array.from(htmlDocument.querySelectorAll('a')).map(link => link.href);
+
+          // Filter out non-image files
+          const imageFiles = images.filter(file => /\.(jpe?g|png|gif|bmp)$/i.test(file));
+          
+          // Generate HTML for the gallery items
+          const gallery = document.querySelector('.gallery');
+          imageFiles.forEach(file => {
+            const imageName = file.split('/').pop().split('.')[0];
+            const galleryItem = document.createElement('div');
+            galleryItem.className = 'gallery-item';
+            galleryItem.innerHTML = `
+              <img src="${file}" alt="${imageName}">
+              <div class="image-name">${imageName}</div>
+            `;
+            gallery.appendChild(galleryItem);
+          });
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    }
+
+    // Fetch and display the images
+    fetchImages();
+  </script>
           
           </div>
           <!-- Add more gallery items with image and name -->
@@ -280,7 +288,7 @@
 <!-- Scripts -->
 <script src="js/scripts.js"></script> 
 
-<div class="gallery"></div>
+<!-- <div class="gallery"></div>
 
   <script>
     const directory = "images/gallery/"; // Update with the correct directory path
@@ -317,6 +325,9 @@
 
     // Fetch and display the images
     fetchImages();
-  </script>
+  </script> -->
+  
+
+
 </body>
 </html>
