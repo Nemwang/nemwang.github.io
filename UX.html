@@ -153,7 +153,8 @@
 
       
       <!-- Add padding to the gallery container -->
-      <div class="gallery-container" style="padding: 70px;">
+      <div class="gallery-container" style="padding: 80px;">
+        
         <style>
           /* Gallery styles */
           .gallery {
@@ -192,43 +193,58 @@
             opacity: 1;
           }
         </style>
-  
-        <div class="gallery">
-          <div class="gallery-item">
-            <img src="images/gallery/calc.jpg" alt="Image 1">
-            <div class="image-name">Calculator</div>
-          </div>
-          <div class="gallery-item">
-            <img src="images/gallery/gym.jpg" alt="Image 2">
-            <div class="image-name">Gym</div>
-          </div>
-          <div class="gallery-item">
-            <img src="images/gallery/cycle.jpg" alt="Image 3">
-            <div class="image-name">Cycle</div>
-          </div>
-          <div class="gallery-item">
-            <img src="images/gallery/user.jpg" alt="Image 4">
-            <div class="image-name">User Profile</div>
-          </div>
-
-          <div class="gallery-item">
-            <img src="images/gallery/icon.jpg" alt="Image 4">
-            <div class="image-name">Icon</div>
-          </div>
-          <div class="gallery-item">
-            <img src="images/gallery/checkout.jpg" alt="Image 4">
-            <div class="image-name">Checkout</div>
-          </div>
-          <div class="gallery-item">
-            <img src="images/gallery/error.jpg" alt="Image 4">
-            <div class="image-name">Error</div>
-          </div>
-          
-          </div>
-          <!-- Add more gallery items with image and name -->
-        </div>
-      </div>
+        <div class="textheader" style="padding: 20px;"> <h1>UX/UI Designs</h1></div>
+        
+    <div class="gallery" id="image-gallery">
+      <!-- Images will be dynamically added here -->
     </div>
+    
+    <script>
+      // Function to load images from the directory
+      function loadImages() {
+        const directory = "images/gallery/";
+        const gallery = document.getElementById("image-gallery");
+    
+        // Fetch the list of image files from the directory
+        fetch(directory)
+          .then(response => response.text())
+          .then(data => {
+            // Parse the HTML content of the directory
+            const parser = new DOMParser();
+            const htmlContent = parser.parseFromString(data, "text/html");
+    
+            // Get the list of image file names
+            const fileNames = Array.from(htmlContent.querySelectorAll("a"))
+              .map(a => a.href)
+              .filter(href => href.match(/\.(jpe?g|png|gif)$/i))
+              .map(href => href.replace(/^.*[\\/]/, ""));
+    
+            // Generate the HTML code for each image
+            fileNames.forEach(fileName => {
+              const imagePath = directory + fileName;
+              const imageElement = document.createElement("img");
+              imageElement.src = imagePath;
+    
+              const galleryItem = document.createElement("div");
+              galleryItem.className = "gallery-item";
+              galleryItem.appendChild(imageElement);
+    
+              const imageName = document.createElement("div");
+              imageName.className = "image-name";
+              imageName.textContent = fileName.replace(/\.[^.]+$/, "");
+              galleryItem.appendChild(imageName);
+    
+              gallery.appendChild(galleryItem);
+            });
+          })
+          .catch(error => {
+            console.log("Error loading images:", error);
+          });
+      }
+    
+      // Call the function to load images when the page is loaded
+      window.addEventListener("load", loadImages);
+    </script>
     
 
     <!-- Modals success -->
