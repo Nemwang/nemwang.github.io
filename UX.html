@@ -199,7 +199,7 @@
   <script>
     // Function to fetch the image files from the GitHub repository
     function fetchImages() {
-      const apiUrl = 'https://api.github.com/repos/nemwang/nemwang.github.io/images/gallery';
+      const apiUrl = 'https://api.github.com/repos/nemwang/nemwang.github.io/contents/images/gallery';
       fetch(apiUrl)
         .then(response => response.json())
         .then(data => {
