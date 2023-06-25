@@ -18,7 +18,48 @@
 <!-- Styles -->
 <link href="css/style.css" rel="stylesheet" media="screen">
 <link href="css/style2.css" rel="stylesheet" media="screen">
+<style>
+  /* Gallery styles */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-gap: 20px;
+    padding: 20px;
+  }
+  .gallery-item {
+  overflow: hidden;
+  border-radius: 5px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
+.gallery-item img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+  .gallery-item:hover img {
+    transform: scale(1.1);
+  }
+  .image-name {
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+  .gallery-item:hover .image-name {
+    opacity: 1;
+  }
+</style>
 </head>
 <body class="body-full-page">
     
@@ -38,11 +79,11 @@
         
       </div>
       <ul class="menu-list right-boxed">
-        <li  data-menuanchor="page1">
-          <a  href="index.html">Home</a>
+        <li data-menuanchor="page1">
+          <a href="index.html">Home</a>
         </li>
-        <li  data-menuanchor="page1">
-          <a  href="wordpress.html">Projects</a>
+        <li data-menuanchor="page1">
+          <a href="wordpress.html">Projects</a>
         </li>
     
       </ul>
@@ -55,7 +96,7 @@
           <a href="https://https://dribbble.com/Nemwang" class="icon ion-social-dribbble-outline"></a>
           <a href="https://www.behance.net/yangdemba" class="icon ion-social-behance-outline"></a>
         </div>
-        <div class="copy">© Nemwang. All Rights Reseverd<br> Design by Nemwang</div>
+        <div class="copy">© Nemwang. All Rights Reserved<br> Design by Nemwang</div>
       </div>
     </div>
 
@@ -85,164 +126,110 @@
         <a href="https://github.com/Nemwang" class="icon ion-social-github-outline"></a>
         <a href="https://https://dribbble.com/Nemwang" class="icon ion-social-dribbble-outline"></a>
         <a href="https://www.behance.net/yangdemba" class="icon ion-social-behance-outline"></a>
-        
-        
       </div>
     </header>
     <div class="page-wrapper">
-      <div class="copy-bottom white boxed">© Nemwang.</div>
+      <div class="copy-bottom white boxed">© Nemwang. All Rights Reserved</div>
       <div class="lang-bottom white boxed">
         <div class="menu-lang">
           <a href="" class="active">Eng</a>
-          
         </div>
       </div>
-      <div class="grid image-grid">
 
-        <div class="grid-block">
-          <div class="tile">
-            <a class="tile-link" href="#">
-              <img class="tile-img tile-img1" src="images/gallery/calc.jpg" alt="Image">
-            </a>
-          </div>
-        </div>
+      <!-- Add your responsive content here -->
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/smoothscroll.js"></script>
+    <script src="js/jquery.validate.min.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+    <script src="js/jquery.pagepiling.js"></script>
+    <script src="js/scripts.js"></script> 
+</body>
+</html>
+
       
-        <div class="grid-block">
-          <div class="tile">
-            <a class="tile-link" href="#">
-              <img class="tile-img tile-img2" src="images/gallery/gym.jpg" alt="Image">
-            </a>
-          </div>
-        </div>
-      
-        <div class="grid-block">
-          <div class="tile">
-            <a class="tile-link" href="#">
-              <img class="tile-img tile-img3" src="images/gallery/landing.jpg" alt="Image">
-            </a>
-          </div>
-        </div>
-      
-        <div class="grid-block">
-          <div class="tile">
-            <a class="tile-link" href="#">
-              <img class="tile-img tile-img4" src="images/gallery/travel.jpg" alt="Image">
-            </a>
-          </div>
-        </div>
-      
-        <div class="grid-block">
-          <div class="tile">
-            <a class="tile-link" href="#">
-              <img class="tile-img tile-img5" src="images/gallery/user.jpg" alt="Image">
-            </a>
-          </div>
-        </div>
-      
-        <div class="grid-block">
-          <div class="tile">
-            <a class="tile-link" href="#">
-              <img class="tile-img tile-img6" src="images/gallery/checkout.jpg" alt="Image">
-            </a>
-          </div>
-        </div>
-      
-        <div class="grid-block">
-          <div class="tile">
-            <a class="tile-link" href="#">
-              <img class="tile-img tile-img7" src="images/gallery/cycle.jpg" alt="Image">
-            </a>
-          </div>
-        </div>
-      
-        <div class="grid-block">
-          <div class="tile">
-            <a class="tile-link" href="#">
-              <img class="tile-img tile-img8" src="images/gallery/error.jpg" alt="Image">
-            </a>
-          </div>
-        </div>
-      
-        <div class="grid-block">
-          <div class="tile">
-            <a class="tile-link" href="#">
-              <img class="tile-img tile-img9" src="images/gallery/calc.jpg" alt="Image">
-            </a>
-          </div>
-        </div>
-      
-        <div class="grid-block">
-          <div class="tile">
-            <a class="tile-link" href="#">
-              <img class="tile-img tile-img10" src="images/gallery/user.jpg" alt="Image">
-            </a>
-          </div>
-        </div>
-      
-      </div>
-      <!-- <div class="containers">
-        <div class="intro">
-          <div class="row">
-            <div class="headername">
-              <h2><p>UI Designs </p> </h2>
-              
-            </div>
-          </div>
-        </div>
-      </div>
-<ul class="img-list">
-  <li><img src="images/gallery/user.jpg">USER PROFILE </li>
- 
-  <li><img src="images/gallery/landing.jpg">LANDING PAGE</li>
+      <!-- Add padding to the gallery container -->
+      <div class="gallery-container" style="padding: 70px;">
+        <style>
+          /* Gallery styles */
+          .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-gap: 20px;
+            padding: 20px;
+          }
+          .gallery-item {
+            overflow: hidden;
+            border-radius: 5px;
+            position: relative;
+          }
+          .gallery-item img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            transition: transform 0.3s ease-in-out;
+          }
+          .gallery-item:hover img {
+            transform: scale(1.1);
+          }
+          .image-name {
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+          }
+          .gallery-item:hover .image-name {
+            opacity: 1;
+          }
+        </style>
   
-  
-</ul>
-<ul class="img-list"> 
-  <li><img src="images/gallery/cycle.jpg">CYCLE HOME PAGE</li>
-  <li><img src="images/gallery/error.jpg">ERROR 404</li>
-  <li><img src="images/gallery/gym.jpg">GYM APP UI</li>
-  <li><img src="images/gallery/calc.jpg">CALCULATOR APP UI</li>
-  <li><img src="images/gallery/travel.jpg">Travel APP</li>
- 
-</ul>
-</div>
- 
-       </div> -->
-  
-      <!-- <div class="containers">
-        <div class="intro">
-          <div class="row">
-            <div class="headername">
-              <h2><p>UI Designs </p> </h2>
-              
-            </div>
+        <div class="gallery">
+          <div class="gallery-item">
+            <img src="images/gallery/calc.jpg" alt="Image 1">
+            <div class="image-name">Calculator</div>
           </div>
-        </div>
-      </div>
-      <div class="container">
-       
-        <div class="box">
-           <img src="images/gallery/GYM APP.jpg">
-           <span>Gym App</span>
-         </div>
-         <div class="box">
-           <img src="https://source.unsplash.com/1000x802">
-           <span>Image</span>
-         </div>
-         <div class="box">
-           <img src="https://source.unsplash.com/1000x804">
-           <span>Hover</span>
-         </div>
-         <div class="box">
-           <img src="https://source.unsplash.com/1000x806">
-           <span>Effect</span>
-         </div>
- 
-       </div> -->
+          <div class="gallery-item">
+            <img src="images/gallery/gym.jpg" alt="Image 2">
+            <div class="image-name">Gym</div>
+          </div>
+          <div class="gallery-item">
+            <img src="images/gallery/Cycle.jpg" alt="Image 3">
+            <div class="image-name">Cycle</div>
+          </div>
+          <div class="gallery-item">
+            <img src="images/gallery/user.jpg" alt="Image 4">
+            <div class="image-name">User Profile</div>
+          </div>
+
+          <div class="gallery-item">
+            <img src="images/gallery/icon.jpg" alt="Image 4">
+            <div class="image-name">Icon</div>
+          </div>
+          <div class="gallery-item">
+            <img src="images/gallery/checkout.jpg" alt="Image 4">
+            <div class="image-name">Checkout</div>
+          </div>
+          <div class="gallery-item">
+            <img src="images/gallery/error.jpg" alt="Image 4">
+            <div class="image-name">Error</div>
+          </div>
           
+          </div>
+          <!-- Add more gallery items with image and name -->
         </div>
-       
- </div>
+      </div>
+    </div>
+    
 
     <!-- Modals success -->
 
