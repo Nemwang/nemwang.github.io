@@ -538,6 +538,7 @@
       </div> -->
       <div data-anchor="page6" class="pp-scrollable section section-6">
         <div class="scroll-wrap">
+
           <div class="scrollable-content">
             <div class="vertical-centred">
               <div class="boxed boxed-inner">
@@ -551,6 +552,7 @@
                           <div class="contact-info">
                             <form class="js-form" novalidate="novalidate">
                               <div class="row">
+                                
                                 <div class="form-group col-sm-6">
                                   <input type="text" name="name" required="" placeholder="Name*" aria-required="true">
                                 </div>
@@ -558,14 +560,13 @@
                                   <input type="email" name="email" placeholder="Email">
                                 </div>
                                 <div class="form-group col-sm-12">
-                                  <input type="text" name="subject" placeholder="Subject (Optional)">
+                                  <input type="text" name="subject" placeholder="Subject (Optinal)">
                                 </div>
                                 <div class="form-group col-sm-12">
                                   <textarea name="message" required="" placeholder="Message*" aria-required="true"></textarea>
                                 </div>
-                                <div class="col-sm-12">
-                                  <button type="button" class="btn" onclick="sendEmail()">Send Email</button>
-                                </div>
+                                <div class="col-sm-12"><button type="submit" class="btn"><a href="https://mail.google.com/mail/?view=cm&fs=1&to=nemwang.soooman@gmail.com">Send Email</button></a></div>
+
                               </div>
                             </form>
                           </div>
@@ -579,18 +580,6 @@
           </div>
         </div>
       </div>
-      
-      <script>
-      function sendEmail() {
-        var email = "nemwang.soooman@gmail.com";
-        var subject = encodeURIComponent(document.getElementsByName("subject")[0].value);
-        var body = encodeURIComponent(document.getElementsByName("message")[0].value);
-        var mailtoLink = "mailto:" + email + "?subject=" + subject + "&body=" + body;
-      
-        window.location.href = mailtoLink;
-      }
-      </script>
-      
     </div>
 
     <!-- Modals success -->
