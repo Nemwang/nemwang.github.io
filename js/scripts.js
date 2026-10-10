@@ -198,23 +198,37 @@
 
 
 
+	// The backend lives on Render; on any other host (your computer) use the local one.
+	var API_URL = window.location.hostname === 'nemwang.github.io'
+		? 'https://nemwang-portfolio-api.onrender.com'
+		: 'http://localhost:3000';
+
 	if ($('.js-form').length) {
 		$('.js-form').each(function(){
 			$(this).validate({
 				errorClass: 'error wobble-error',
 			    submitHandler: function(form){
+			    	var $button = $(form).find('button[type="submit"]');
+			    	var buttonText = $button.text();
+			    	// The free server sleeps when idle, so the first request can be slow.
+			    	$button.prop('disabled', true).text('Sending...');
 		        	$.ajax({
 			            type: "POST",
-			            url:"mail.php",
+			            url: API_URL + "/api/contact",
 			            data: $(form).serialize(),
 			            success: function() {
 			            	$('#error').modal('hide');
 		                	$('#success').modal('show');
+		                	form.reset();
 		                },
 
 		                error: function(){
 		                	$('#success').modal('hide');
 			                $('#error').modal('show');
+			            },
+
+			            complete: function(){
+			            	$button.prop('disabled', false).text(buttonText);
 			            }
 			        });
 			    }
