@@ -1,0 +1,5 @@
+# Files uploaded from the admin panel are served as plain files, never run.
+<FilesMatch "\.(php\d?|phtml|phar)$">
+    Require all denied
+</FilesMatch>
+Options -Indexes

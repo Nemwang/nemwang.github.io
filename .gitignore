@@ -1,0 +1,3 @@
+cms/config.php
+uploads/*
+!uploads/.htaccess

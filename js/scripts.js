@@ -9,10 +9,11 @@
 	var navbar=$('.js-navbar:not(.navbar-fixed)');
 
 
-	$(window).on('load', function(){
-
-		$('.loader').fadeOut(1000);
-	});
+	// Hide the loading animation once the page has loaded, or after 2.5 seconds at most
+	// so a slow image never keeps visitors waiting.
+	var hideLoader = function(){ $('.loader').fadeOut(600); };
+	$(window).on('load', hideLoader);
+	setTimeout(hideLoader, 2500);
 
 
 	/*-------------------------------------------------------------------------------
@@ -128,7 +129,8 @@
       	$('.pagepiling').pagepiling({
     		scrollingSpeed: 280,
 		    loopBottom:true,
-		    anchors: ['page1', 'page2', 'page3', 'page4', 'page5', 'page6', 'page7'],
+		    // index.php lists the anchors of the sections switched on in the admin panel.
+		    anchors: window.SECTION_ANCHORS || ['page1', 'page2', 'page3', 'page4', 'page5', 'page6', 'page7'],
 		    afterLoad: function(anchorLink, index){
 	            if ( $('.pp-section.active').scrollTop() > 0 ){
 	            	$('.navbar').removeClass('navbar-white');
@@ -198,11 +200,6 @@
 
 
 
-	// The backend lives on Render; on any other host (your computer) use the local one.
-	var API_URL = window.location.hostname === 'nemwang.github.io'
-		? 'https://nemwang-portfolio-api.onrender.com'
-		: 'http://localhost:3000';
-
 	if ($('.js-form').length) {
 		$('.js-form').each(function(){
 			$(this).validate({
@@ -210,11 +207,10 @@
 			    submitHandler: function(form){
 			    	var $button = $(form).find('button[type="submit"]');
 			    	var buttonText = $button.text();
-			    	// The free server sleeps when idle, so the first request can be slow.
 			    	$button.prop('disabled', true).text('Sending...');
 		        	$.ajax({
 			            type: "POST",
-			            url: API_URL + "/api/contact",
+			            url: "contact.php",
 			            data: $(form).serialize(),
 			            success: function() {
 			            	$('#error').modal('hide');
