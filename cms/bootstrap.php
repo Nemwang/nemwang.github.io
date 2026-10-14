@@ -5,7 +5,28 @@
 define('CMS_ROOT', __DIR__);
 define('SITE_ROOT', dirname(__DIR__));
 
+// Errors never appear on the live site (they go to the server's error log), and error
+// traces never include function arguments such as the database password.
+// On your own computer (http://localhost) errors still show, to help while editing.
+ini_set('zend.exception_ignore_args', '1');
+if (PHP_SAPI !== 'cli' && !in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1'], true)) {
+    ini_set('display_errors', '0');
+    ini_set('log_errors', '1');
+}
+
+// Security headers (also set in .htaccess; repeated here for servers that ignore it).
+if (PHP_SAPI !== 'cli' && !headers_sent()) {
+    header_remove('X-Powered-By');
+    header('X-Content-Type-Options: nosniff');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('X-Frame-Options: SAMEORIGIN');
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+        header('Strict-Transport-Security: max-age=31536000');
+    }
+}
+
 require CMS_ROOT . '/images.php';
+require_once CMS_ROOT . '/resume.php';
 
 function cms_config(): array
 {
@@ -31,11 +52,18 @@ function db(): PDO
             $c['db_port'] ?? 3306,
             $c['db_name'] ?? ''
         );
-        $pdo = new PDO($dsn, $c['db_user'] ?? '', $c['db_pass'] ?? '', [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-        ]);
+        try {
+            $pdo = new PDO($dsn, $c['db_user'] ?? '', $c['db_pass'] ?? '', [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ]);
+        } catch (PDOException $e) {
+            // Log the reason, but never pass the original error on: its trace can contain
+            // the database name, user and password.
+            error_log('Database connection failed: ' . $e->getMessage());
+            throw new RuntimeException('Could not connect to the database. Check the details in cms/config.php.');
+        }
     }
     return $pdo;
 }
@@ -80,6 +108,42 @@ function cms_create_tables(): void
     ];
     foreach ($tables as $sql) {
         db()->exec($sql);
+    }
+    cms_upgrade();
+}
+
+// Additions made after the first release; safe to run any number of times.
+function cms_upgrade(): void
+{
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    $done = true;
+    $pdo = db();
+    // "Remember me": one row per device, the secret part stored only as a hash.
+    $pdo->exec('CREATE TABLE IF NOT EXISTS remember_tokens (
+        selector CHAR(24) NOT NULL PRIMARY KEY,
+        validator_hash CHAR(64) NOT NULL,
+        user_id INT UNSIGNED NOT NULL,
+        expires_at DATETIME NOT NULL,
+        KEY user (user_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
+    // "Forgot password": one-time links, stored only as a hash.
+    $pdo->exec('CREATE TABLE IF NOT EXISTS password_resets (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        user_id INT UNSIGNED NOT NULL,
+        token_hash CHAR(64) NOT NULL,
+        ip VARCHAR(45) NOT NULL,
+        created_at DATETIME NOT NULL,
+        expires_at DATETIME NOT NULL,
+        used TINYINT(1) NOT NULL DEFAULT 0,
+        KEY token (token_hash),
+        KEY ip_time (ip, created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
+    // The address password-reset links are sent to.
+    if (!$pdo->query("SHOW COLUMNS FROM users LIKE 'email'")->fetch()) {
+        $pdo->exec('ALTER TABLE users ADD COLUMN email VARCHAR(200) NULL AFTER username');
     }
 }
 
@@ -413,9 +477,9 @@ function viber_url(): string
 
 function cv_link_html(string $class): string
 {
-    if (s('resume_cv') === '') {
+    if (cv_url() === '') {
         return '';
     }
-    return '<a class="' . e($class) . '" href="' . e(s('resume_cv')) . '" target="_blank" download="' . e(s('resume_cv_filename')) . '">'
+    return '<a class="' . e($class) . '" href="' . e(cv_url()) . '" target="_blank" download="' . e(cv_filename()) . '">'
         . '<i class="icon ion-android-download" aria-hidden="true"></i> ' . e(s('resume_cv_label')) . '</a>';
 }

@@ -42,7 +42,7 @@ require __DIR__ . '/cms/partials/bottom-bar.php';
                           <h1 class="display-2 text-white"><?= hl(s('intro_heading')) ?></h1>
                           <br/><h6><?= hl(s('intro_sub')) ?></h6>
                           <div class="hr-bottom"></div>
-<?php if (on('intro_cv_button') && s('resume_cv') !== ''): ?>
+<?php if (on('intro_cv_button') && cv_url() !== ''): ?>
                           <div class="intro-actions"><?= cv_link_html('site-button') ?></div>
 <?php endif; ?>
                         </div>
@@ -197,8 +197,8 @@ require __DIR__ . '/cms/partials/bottom-bar.php';
           <div class="scrollable-content">
             <div class="vertical-centred">
               <div class="boxed boxed-inner">
-<?php if (s('resume_cv') !== ''): ?>
-                <div class="vertical-title hidden-xs hidden-sm"><span><a href="<?= e(s('resume_cv')) ?>" target="_blank" download="<?= e(s('resume_cv_filename')) ?>"><?= e(s('resume_cv_label')) ?></a></span></div>
+<?php if (cv_url() !== ''): ?>
+                <div class="vertical-title hidden-xs hidden-sm"><span><a href="<?= e(cv_url()) ?>" target="_blank" download="<?= e(cv_filename()) ?>"><?= e(s('resume_cv_label')) ?></a></span></div>
 <?php endif; ?>
                 <div class="boxed">
                   <div class="container">
@@ -233,7 +233,7 @@ require __DIR__ . '/cms/partials/bottom-bar.php';
                         </div>
 <?php endforeach; ?>
                       </div>
-<?php if (on('resume_cv_button') && s('resume_cv') !== ''): ?>
+<?php if (on('resume_cv_button') && cv_url() !== ''): ?>
                       <div class="resume-actions"><?= cv_link_html('site-button') ?></div>
 <?php endif; ?>
                     </div>

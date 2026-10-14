@@ -611,3 +611,35 @@ body.auth {
 .mail-status .icon { margin-top: 2px; }
 .mail-status a { color: var(--ink); font-weight: 600; }
 .mail-status code { padding: 1px 5px; border-radius: 4px; background: #eef0f3; font-size: 12px; }
+
+/* Tick-box lists (e.g. which entries go into a custom resume) */
+.checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px 18px; max-height: 260px; overflow-y: auto; padding: 12px 14px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface-2); }
+.checklist .check { display: flex; align-items: flex-start; gap: 8px; font-size: 13.5px; line-height: 1.4; cursor: pointer; }
+.checklist input { margin-top: 2px; accent-color: var(--ink); }
+
+/* Live PDF preview under a custom resume */
+.preview-card { max-width: 760px; overflow: hidden; }
+.pdf-preview { display: block; width: 100%; height: 980px; border: 0; background: #e9ebef; }
+.preview-help { margin: 0; padding: 10px 22px 14px; }
+
+/* Resumes card on the dashboard */
+.resume-card { padding: 0; }
+.resume-card-main { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 18px; padding: 20px 22px; }
+.resume-card-main > div:nth-child(2) { flex: 1; min-width: 220px; }
+.resume-card-main h2 { font-size: 16px; }
+.resume-card-main p { margin: 3px 0 0; font-size: 13.5px; }
+.resume-card-list { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 12px 22px; border-top: 1px solid var(--line); font-size: 13.5px; }
+.resume-card-list a { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; text-decoration: none; }
+.resume-card-list a:hover { text-decoration: underline; }
+
+.list-warn { color: #b45309; font-size: 12.5px; font-weight: 600; }
+
+/* Login extras */
+.label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.small-link { font-size: 13px; font-weight: 500; color: var(--muted); }
+.small-link:hover { color: var(--ink); }
+.remember { display: flex; align-items: center; gap: 8px; margin: 2px 0 14px; color: var(--ink-2); font-size: 13.5px; cursor: pointer; }
+.remember input { accent-color: var(--ink); width: 16px; height: 16px; }
+.auth-foot { margin: 16px 0 0; color: var(--muted); font-size: 13px; text-align: center; }
+.auth-foot a { color: var(--ink); font-weight: 600; }
+.reset-link { margin: 12px 0 0; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--surface-2); border: 1px dashed var(--line-strong); font-size: 12.5px; overflow-wrap: anywhere; }

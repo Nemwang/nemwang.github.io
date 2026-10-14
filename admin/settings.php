@@ -65,7 +65,10 @@ foreach ($group['fields'] as $name => $field) {
 admin_header($group['label'], 'settings:' . $key, [
     'crumb' => $navTitle,
     'description' => $group['description'] ?? '',
-    'actions' => '<a class="button ghost" href="' . e($pageUrl) . '" target="_blank" rel="noopener">' . icon('external', 16) . '<span>View page</span></a>',
+    'actions' => $key === 'resumepdf'
+        ? '<a class="button ghost" href="../resume.php?download=1">' . icon('upload', 16) . '<span>Download</span></a>'
+            . '<a class="button primary" href="../resume.php" target="_blank" rel="noopener">' . icon('file-text', 16) . '<span>Preview PDF</span></a>'
+        : '<a class="button ghost" href="' . e($pageUrl) . '" target="_blank" rel="noopener">' . icon('external', 16) . '<span>View page</span></a>',
 ]);
 ?>
     <form method="post" enctype="multipart/form-data" class="edit-form" data-form>

@@ -40,6 +40,29 @@ admin_header('Welcome back, ' . current_username(), 'dashboard', [
       </a>
     </div>
 
+<?php $customResumes = array_slice(array_reverse(items('resumes', false)), 0, 3); ?>
+    <section class="card resume-card">
+      <div class="resume-card-main">
+        <span class="stat-icon"><?= icon('file-text', 22) ?></span>
+        <div>
+          <h2>Resumes</h2>
+          <p class="muted">Pick a target job, paste the posting, and get an ATS-friendly PDF made from your portfolio content.</p>
+        </div>
+        <div class="page-actions">
+          <a class="button ghost" href="../resume.php" target="_blank" rel="noopener"><?= icon('external', 16) ?><span>Main resume</span></a>
+          <a class="button primary" href="items.php?c=resumes&amp;new=1"><?= icon('plus', 16) ?><span>Create a resume for a job</span></a>
+        </div>
+      </div>
+<?php if ($customResumes): ?>
+      <div class="resume-card-list">
+<?php foreach ($customResumes as $custom): ?>
+        <a href="items.php?c=resumes&amp;id=<?= $custom['id'] ?>"><?= icon('file-text', 15) ?><?= e($custom['label'] ?: 'Untitled resume') ?></a>
+<?php endforeach; ?>
+        <a class="muted" href="items.php?c=resumes">All custom resumes →</a>
+      </div>
+<?php endif; ?>
+    </section>
+
     <div class="dash-grid">
       <section class="card">
         <header class="card-head"><h2>Pages</h2></header>

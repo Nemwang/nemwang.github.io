@@ -40,6 +40,19 @@ if ($id && !isset($byId[$id])) {
     redirect($self);
 }
 $values = $id ? $byId[$id] : array_map(fn($field) => (string) ($field['default'] ?? ''), $fields);
+
+// Collections matched against a text field (e.g. a job posting) show the matching words in their tick-box lists.
+$addKeywords = function (array $values) use (&$fields, $collection): void {
+    if (!empty($collection['match_from'])) {
+        $keywords = resume_keywords($values[$collection['match_from']] ?? '');
+        foreach ($fields as $name => $field) {
+            if ($field['type'] === 'checklist') {
+                $fields[$name]['keywords'] = $keywords;
+            }
+        }
+    }
+};
+$addKeywords($values);
 $visible = $id ? (bool) $byId[$id]['visible'] : true;
 
 if (is_post()) {
@@ -52,9 +65,13 @@ if (is_post()) {
             foreach ($fields as $name => $field) {
                 $data[$name] = read_field($name, $field);
             }
+            if (!empty($collection['before_save'])) {
+                $data = ($collection['before_save'])($data, $fields);
+            }
             $values = $data;
-            $visible = isset($_POST['visible']);
-            $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $addKeywords($values);
+            $visible = !empty($collection['no_visibility']) || isset($_POST['visible']);
+            $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
 
             if ($id) {
                 $pdo->prepare('UPDATE items SET data = ?, visible = ? WHERE id = ? AND collection = ?')
@@ -112,6 +129,7 @@ $rowActions = function (array $row, int $index) use ($self, $collection, $rows):
         . '<button class="icon-button" name="action" value="up" title="Move up" aria-label="Move up"' . ($index === 0 ? ' disabled' : '') . '>' . icon('up', 16) . '</button>'
         . '<button class="icon-button" name="action" value="down" title="Move down" aria-label="Move down"' . ($index === count($rows) - 1 ? ' disabled' : '') . '>' . icon('down', 16) . '</button>'
         . '<button class="icon-button" name="action" value="toggle" title="' . ($row['visible'] ? 'Hide from site' : 'Show on site') . '" aria-label="' . ($row['visible'] ? 'Hide' : 'Show') . '">' . icon($row['visible'] ? 'eye' : 'eye-off', 16) . '</button>'
+        . (!empty($collection['row_link']) ? '<a class="icon-button" href="' . e(str_replace('{id}', (string) $row['id'], $collection['row_link']['url'])) . '" target="_blank" rel="noopener" title="' . e($collection['row_link']['label']) . '" aria-label="' . e($collection['row_link']['label']) . '">' . icon($collection['row_link']['icon'], 16) . '</a>' : '')
         . '<a class="icon-button" href="' . $self . '&amp;id=' . $row['id'] . '" title="Edit" aria-label="Edit">' . icon('pencil', 16) . '</a>'
         . '<button class="icon-button danger" name="action" value="delete" title="Delete" aria-label="Delete" data-confirm="Delete this ' . $singular . '? This cannot be undone.">' . icon('trash', 16) . '</button>'
         . '</form>';
@@ -121,6 +139,9 @@ if ($editing):
     admin_header(($id ? 'Edit ' : 'New ') . $collection['singular'], 'collection:' . $key, [
         'crumb' => $collection['label'],
         'back' => $self,
+        'actions' => $id && !empty($collection['row_link'])
+            ? '<a class="button primary" href="' . e(str_replace('{id}', (string) $id, $collection['row_link']['url'])) . '" target="_blank" rel="noopener">' . icon($collection['row_link']['icon'], 16) . '<span>' . e($collection['row_link']['label']) . '</span></a>'
+            : '',
     ]); ?>
     <form method="post" enctype="multipart/form-data" class="edit-form" data-form>
       <?= csrf_field() ?>
@@ -128,10 +149,12 @@ if ($editing):
       <section class="card section-card<?= $visible ? '' : ' is-off' ?>">
         <header class="card-head">
           <h2>Details</h2>
+<?php if (empty($collection['no_visibility'])): ?>
           <label class="switch-inline">
             <span data-switch-text data-on="Shown on site" data-off="Hidden"><?= $visible ? 'Shown on site' : 'Hidden' ?></span>
             <?= switch_html('visible', $visible, ' data-section-toggle') ?>
           </label>
+<?php endif; ?>
         </header>
         <div class="card-body field-grid">
 <?php foreach ($fields as $name => $field) {
@@ -141,6 +164,19 @@ if ($editing):
       </section>
       <?= save_bar($self) ?>
     </form>
+<?php if ($id && !empty($collection['preview'])): $previewUrl = str_replace('{id}', (string) $id, $collection['preview']); ?>
+    <section class="card preview-card">
+      <header class="card-head">
+        <h2>Preview</h2>
+        <span class="page-actions">
+          <a class="button ghost small" href="<?= e($previewUrl) ?>&amp;download=1"><?= icon('upload', 15) ?><span>Download PDF</span></a>
+          <a class="button ghost small" href="<?= e($previewUrl) ?>" target="_blank" rel="noopener"><?= icon('external', 15) ?><span>Open in new tab</span></a>
+        </span>
+      </header>
+      <iframe class="pdf-preview" src="<?= e($previewUrl) ?>&amp;t=<?= time() ?>#view=FitH" title="Resume preview"></iframe>
+      <p class="help preview-help">Save your changes to update the preview.</p>
+    </section>
+<?php endif; ?>
 <?php else:
     $hiddenCount = count(array_filter($rows, fn($row) => !$row['visible']));
     admin_header($collection['label'], 'collection:' . $key, [
@@ -185,6 +221,9 @@ if ($editing):
 <?php if (!empty($collection['subtitle']) && $display($collection['subtitle'], $row) !== ''): ?>
           <span class="list-sub"><?= e($display($collection['subtitle'], $row)) ?></span>
 <?php endif; ?>
+<?php foreach ($collection['warn_empty'] ?? [] as $warnField => $warning): if (trim((string) $row[$warnField]) === ''): ?>
+          <span class="list-warn">⚠ <?= e($warning) ?></span>
+<?php endif; endforeach; ?>
         </a>
 <?php if (!$row['visible']): ?>
         <span class="pill">Hidden</span>

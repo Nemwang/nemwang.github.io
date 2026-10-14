@@ -6,6 +6,20 @@ RewriteEngine On
 # Hidden files and folders (.git, .gitignore) are not for visitors.
 RewriteRule (^|/)\.(?!well-known/) - [F]
 
+# Composer files are not for visitors either.
+RewriteRule ^composer\.(json|lock)$ - [F]
+
+# Code that is only used by other files: never opened directly from a browser.
+RewriteRule ^(backend|cms|vendor)(/|$) - [F,NC]
+RewriteRule ^admin/_ - [F]
+RewriteRule \.(sql|log|bak|sh|ini|dist)$ - [F,NC]
+
+# Once SSL is active on Hostinger (hPanel -> Security -> SSL), remove the # from the
+# next three lines so every visit, including your admin login, uses https://.
+# RewriteCond %{HTTPS} off
+# RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
 # Generated for search engines.
 RewriteRule ^sitemap\.xml$ sitemap.php [L]
 RewriteRule ^robots\.txt$ robots.php [L]
@@ -25,3 +39,12 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME}.html -f
 RewriteRule ^([^\.]+)$ $1.html [L]
+
+# Security headers for every file, including images and stylesheets.
+<IfModule mod_headers.c>
+    Header always unset X-Powered-By
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    Header always setifempty X-Frame-Options "SAMEORIGIN"
+</IfModule>

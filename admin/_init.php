@@ -4,6 +4,8 @@
 
 require __DIR__ . '/../cms/bootstrap.php';
 
+ini_set('session.use_strict_mode', '1');
+ini_set('session.use_only_cookies', '1');
 session_name('portfolio_admin');
 session_set_cookie_params([
     'httponly' => true,
@@ -19,6 +21,121 @@ function redirect(string $to): void
 {
     header('Location: ' . $to);
     exit;
+}
+
+/* ---------------------------------------------------------------------------
+   "Remember me": a 30-day cookie of "selector:secret". Only a hash of the secret
+   is stored, and the secret changes every time the cookie is used.
+--------------------------------------------------------------------------- */
+
+const REMEMBER_COOKIE = 'portfolio_remember';
+const REMEMBER_DAYS = 30;
+
+function remember_cookie(string $value, int $expires): void
+{
+    setcookie(REMEMBER_COOKIE, $value, [
+        'expires' => $expires,
+        'path' => rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/admin/x')), '/') . '/',
+        'httponly' => true,
+        'samesite' => 'Lax',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+    ]);
+}
+
+function remember_login(int $userId): void
+{
+    $selector = bin2hex(random_bytes(12));
+    $secret = bin2hex(random_bytes(32));
+    db()->prepare('INSERT INTO remember_tokens (selector, validator_hash, user_id, expires_at) VALUES (?, ?, ?, NOW() + INTERVAL ' . REMEMBER_DAYS . ' DAY)')
+        ->execute([$selector, hash('sha256', $secret), $userId]);
+    remember_cookie($selector . ':' . $secret, time() + REMEMBER_DAYS * 86400);
+}
+
+// Forget this device (log out).
+function forget_login(): void
+{
+    $cookie = (string) ($_COOKIE[REMEMBER_COOKIE] ?? '');
+    if ($cookie !== '') {
+        db()->prepare('DELETE FROM remember_tokens WHERE selector = ?')->execute([strstr($cookie, ':', true) ?: $cookie]);
+        remember_cookie('', time() - 3600);
+    }
+}
+
+// Forget every device of a user (after a password change or reset).
+function forget_all_logins(int $userId): void
+{
+    db()->prepare('DELETE FROM remember_tokens WHERE user_id = ?')->execute([$userId]);
+    remember_cookie('', time() - 3600);
+}
+
+// Logs a remembered device back in when its session has ended.
+function remember_restore(): void
+{
+    $cookie = (string) ($_COOKIE[REMEMBER_COOKIE] ?? '');
+    if (!empty($_SESSION['user_id']) || !str_contains($cookie, ':')) {
+        return;
+    }
+    [$selector, $secret] = explode(':', $cookie, 2);
+    $pdo = db();
+    $pdo->exec('DELETE FROM remember_tokens WHERE expires_at < NOW()');
+    $find = $pdo->prepare('SELECT user_id, validator_hash FROM remember_tokens WHERE selector = ?');
+    $find->execute([$selector]);
+    $token = $find->fetch();
+
+    if (!$token) {
+        remember_cookie('', time() - 3600);
+        return;
+    }
+    if (!hash_equals($token['validator_hash'], hash('sha256', $secret))) {
+        // A right selector with a wrong secret means the cookie was copied: sign out everywhere.
+        forget_all_logins((int) $token['user_id']);
+        return;
+    }
+    $pdo->prepare('DELETE FROM remember_tokens WHERE selector = ?')->execute([$selector]);
+    session_regenerate_id(true);
+    $_SESSION['user_id'] = (int) $token['user_id'];
+    remember_login((int) $token['user_id']);
+}
+
+try {
+    if (cms_installed()) {
+        cms_upgrade();
+        remember_restore();
+    }
+} catch (Throwable $e) {
+    // Database not set up yet: the install page takes care of it.
+}
+
+// Address of the admin panel for links in emails. Order of trust: site_url in cms/config.php,
+// then the address you last logged in at, then (first use only) the address of this request.
+// Using a saved address stops a forged request from pointing a reset link at another website.
+function admin_url(string $page, bool $forEmail = false): string
+{
+    $configured = cms_config()['site_url'] ?? '';
+    if ($configured !== '') {
+        return rtrim($configured, '/') . '/admin/' . $page;
+    }
+    if ($forEmail && s('admin_address') !== '') {
+        return s('admin_address') . $page;
+    }
+    $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+    $host = preg_replace('/[^a-z0-9.\-:\[\]]/i', '', $_SERVER['HTTP_HOST'] ?? 'localhost');
+    return ($https ? 'https' : 'http') . '://' . $host . rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/admin/x')), '/') . '/' . $page;
+}
+
+// Called after a successful login: saves where the admin panel is, for reset links.
+function remember_admin_address(): void
+{
+    db()->prepare('INSERT INTO settings (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)')
+        ->execute(['admin_address', admin_url('')]);
+}
+
+// True only when you are using the site on your own computer (http://localhost/...).
+function is_local_request(): bool
+{
+    $host = strtolower(preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST'] ?? ''));
+    return in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1'], true)
+        && in_array($host, ['localhost', '127.0.0.1', '[::1]'], true);
 }
 
 function require_login(): void
@@ -264,7 +381,7 @@ function admin_footer(): void
 // Short inputs share a row; long ones take the full width of the form.
 function field_is_wide(array $field): bool
 {
-    return in_array($field['type'], ['textarea', 'image', 'file', 'bool'], true)
+    return in_array($field['type'], ['textarea', 'image', 'file', 'bool', 'checklist'], true)
         || !empty($field['wide'])
         || strlen($field['help'] ?? '') > 70;
 }
@@ -318,6 +435,18 @@ function render_field(string $name, array $field, string $value): void
             echo '<option value="' . e((string) $key) . '"' . ((string) $key === $value ? ' selected' : '') . '>' . e($label) . '</option>';
         }
         echo '</select>';
+    } elseif ($type === 'checklist') {
+        $chosen = array_filter(explode(',', $value), 'strlen');
+        $options = checklist_options($field);
+        echo '<div class="checklist" id="' . $id . '">';
+        if (!$options) {
+            echo '<p class="help">Nothing to choose from yet.</p>';
+        }
+        foreach ($options as $optionId => $optionLabel) {
+            echo '<label class="check"><input type="checkbox" name="' . $name . '[]" value="' . (int) $optionId . '"'
+                . (in_array((string) $optionId, $chosen, true) ? ' checked' : '') . '> ' . e($optionLabel) . '</label>';
+        }
+        echo '</div>';
     } elseif ($type === 'image' || $type === 'file') {
         render_media_field($id, $name, $type, $value);
     }
@@ -364,7 +493,7 @@ function save_bar(string $cancelUrl = ''): string
 // readable message if an upload is rejected.
 function read_field(string $name, array $field): string
 {
-    $raw = (string) ($_POST[$name] ?? '');
+    $raw = is_array($_POST[$name] ?? null) ? '' : (string) ($_POST[$name] ?? '');
 
     switch ($field['type']) {
         case 'bool':
@@ -380,6 +509,11 @@ function read_field(string $name, array $field): string
             return (string) $number;
         case 'select':
             return array_key_exists($raw, $field['options']) ? $raw : (string) ($field['default'] ?? '');
+        case 'checklist':
+            // Only ids that are really on offer, stored as "12,15,20".
+            $valid = array_map('strval', array_keys(checklist_options($field)));
+            $picked = array_map('strval', (array) ($_POST[$name] ?? []));
+            return implode(',', array_values(array_intersect($valid, $picked)));
         case 'textarea':
             return trim(str_replace("\r\n", "\n", $raw));
         case 'image':
